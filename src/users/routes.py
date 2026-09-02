@@ -14,6 +14,8 @@ from src.users.schemas import (
 from src.common.exceptions import AppException, ErrorCode
 from src.common.schemas import ErrorResponse # global response error schema
 
+from src.common.constants import API_PREFIX
+
 def register_user_routes(app: FastAPI):
 
    users = [
@@ -23,7 +25,7 @@ def register_user_routes(app: FastAPI):
    ]
    
    @app.get(
-      "/users",
+      f"{API_PREFIX}/users",
       response_model=list[UserResponse]
       )
    def get_users(
@@ -40,13 +42,13 @@ def register_user_routes(app: FastAPI):
 
 
    @app.get(
-      "/users/{user_id}",
+      f"{API_PREFIX}/users/{{user_id}}",
       response_model=UserResponse,
       responses={
          # 404 -- has this Error schema (openapi)
          404: {"model": ErrorResponse},
       }
-      )
+   )
    def get_user(
       # url parameter
       user_id: int = Path(..., gt=0, description="The id of the user to get")
@@ -63,7 +65,7 @@ def register_user_routes(app: FastAPI):
       )
 
    @app.post(
-      "/users",
+      f"{API_PREFIX}/users",
       response_model=UserResponse,
       status_code=201, # new resource created
       )
@@ -82,7 +84,7 @@ def register_user_routes(app: FastAPI):
       return new_user
 
    @app.put(
-      "/users/{user_id}",
+      f"{API_PREFIX}/users/{{user_id}}",
       response_model=UserResponse,
       )
    def update_user(
@@ -100,7 +102,9 @@ def register_user_routes(app: FastAPI):
          status_code=status.HTTP_404_NOT_FOUND,
       )
 
-   @app.delete("/users/{user_id}", response_model=UserResponse)
+   @app.delete(
+      f"{API_PREFIX}/users/{{user_id}}", 
+      response_model=UserResponse)
    def delete_user(
       # ... means required
       user_id: int = Path(..., gt=0)
