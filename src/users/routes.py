@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Path, Query, Body
+from fastapi import FastAPI, Path, Query, Body, HTTPException, status
 from fastapi.responses import JSONResponse
 
 # url parameter /users/{id}
@@ -10,6 +10,9 @@ from src.users.schemas import (
    UserUpdateRequest,
    UserResponse,
 )
+
+from src.common.exceptions import AppException, ErrorCode
+from src.common.schemas import ErrorResponse # global response error schema
 
 def register_user_routes(app: FastAPI):
 
@@ -39,6 +42,10 @@ def register_user_routes(app: FastAPI):
    @app.get(
       "/users/{user_id}",
       response_model=UserResponse,
+      responses={
+         # 404 -- has this Error schema (openapi)
+         404: {"model": ErrorResponse},
+      }
       )
    def get_user(
       # url parameter
@@ -48,13 +55,11 @@ def register_user_routes(app: FastAPI):
          if user["id"] == user_id:
             return user
 
-      return JSONResponse(
-         status=404,
-         content={
-            "error": "user not found",
-            "message": f"no user with {user_id} exists",
-            "user_id": user_id
-         }
+      # fastapi turns this into an HTTP response
+      raise AppException(
+         code=ErrorCode.USER_NOT_FOUND.value,
+         message=f"user with {user_id} does not exist",
+         status_code=status.HTTP_404_NOT_FOUND,
       )
 
    @app.post(
@@ -89,13 +94,10 @@ def register_user_routes(app: FastAPI):
             user["name"] = data.name
             return user
 
-      return JSONResponse(
-         status_code=404,
-         content={
-            "error": "user not found",
-            "message": f"no user with {user_id} exists",
-            "user_id": user_id,
-         },
+      raise AppException(
+         code=ErrorCode.USER_NOT_FOUND.value,
+         message=f"user with {user_id} does not exist",
+         status_code=status.HTTP_404_NOT_FOUND,
       )
 
    @app.delete("/users/{user_id}", response_model=UserResponse)
@@ -109,11 +111,8 @@ def register_user_routes(app: FastAPI):
 
             return deleted_user
 
-      return JSONResponse(
-         status_code=404,
-         content={
-            "error": "user not found",
-            "message": f"no user with {user_id} exists",
-            "user_id": user_id,
-         },
+      raise AppException(
+         code=ErrorCode.USER_NOT_FOUND.value,
+         message=f"user with {user_id} does not exist",
+         status_code=status.HTTP_404_NOT_FOUND,
       )
