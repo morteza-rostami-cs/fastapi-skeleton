@@ -7,6 +7,7 @@ fastapi==0.141.1
 greenlet==3.5.5
 h11==0.16.0
 idna==3.19
+Jinja2==3.1.6
 Mako==1.4.1
 MarkupSafe==3.0.3
 psycopg==3.3.5
@@ -15,9 +16,12 @@ pydantic==2.13.5
 pydantic-settings==2.15.0
 pydantic_core==2.46.5
 python-dotenv==1.2.3
+python-multipart==0.0.32
+sqladmin==0.31.1
 SQLAlchemy==2.0.52
 sqlmodel==0.0.42
 starlette==1.6.0
 typing-inspection==0.4.4
 typing_extensions==4.16.0
 uvicorn==0.52.4
+WTForms==3.2.2

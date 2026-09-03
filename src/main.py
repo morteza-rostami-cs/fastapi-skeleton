@@ -9,6 +9,7 @@ from src.common.handlers import register_exception_handlers
 from fastapi.staticfiles import StaticFiles
 
 from src.database.connection import engine
+from src.admin import register_admin
 
 # get parent dir of main.py
 BASE_DIR = Path(__file__).resolve().parent
@@ -32,6 +33,9 @@ async def lifespan(app: FastAPI):
 
 # fastapi main app
 app = FastAPI(lifespan=lifespan)
+
+# register admin
+register_admin(app)
 
 # serve static files
 app.mount(

@@ -69,3 +69,13 @@ alembic upgrade head
 alembic history
 
 ```
+
+## install admin
+
+```bash
+
+pip install sqladmin
+
+http://127.0.0.1:8000/admin
+
+```
