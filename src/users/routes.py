@@ -15,8 +15,9 @@ from src.common.exceptions import AppException, ErrorCode
 from src.common.schemas import ErrorResponse # global response error schema
 
 from src.common.constants import API_PREFIX
+from src.users.repository import UserRepository
 
-def register_user_routes(app: FastAPI):
+def register_user_routes(app: FastAPI, repository: UserRepository):
 
    users = [
       {"id": 1, "name": "Alice"},
@@ -33,12 +34,13 @@ def register_user_routes(app: FastAPI):
       limit: int = Query(default=10) # get 10 at a time
    ):
 
-      # start index
-      start = (page - 1) * limit
-      # end index
-      end = start + limit
+      users = repository.get_all()
       
-      return users[start:end]
+      # exclude hashed_password
+      return [
+         user.model_dump(exclude={"hashed_password"})
+         for user in users
+      ]      
 
 
    @app.get(

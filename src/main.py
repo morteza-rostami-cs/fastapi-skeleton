@@ -11,6 +11,9 @@ from fastapi.staticfiles import StaticFiles
 from src.database.connection import engine
 from src.admin import register_admin
 
+# repositories
+from src.users.repository import UserRepository
+
 # get parent dir of main.py
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -47,8 +50,11 @@ app.mount(
 # register global error handler
 register_exception_handlers(app=app)
 
+# create repository
+user_repo = UserRepository()
+
 # register users routes
-register_user_routes(app=app)
+register_user_routes(app=app, repository=user_repo)
 
 @app.get("/health/database")
 def database_health():
