@@ -50,4 +50,22 @@ pip install sqlmodel psycopg[binary]
 # for env
 pip install pydantic-settings
 
+# migration
+pip install alembic
+
+# initialize alembic
+alembic init alembic
+
+# check alembic
+alembic current
+
+# create migration
+alembic revision --autogenerate -m "create users table"
+
+# run migration
+alembic upgrade head
+
+# migration history
+alembic history
+
 ```
