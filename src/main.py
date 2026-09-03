@@ -32,6 +32,6 @@ def home():
    # serve html file
    return FileResponse(BASE_DIR / "frontend" / "index.html")
 
-@app.get("/register", include_in_schema=False)
-def register_page():
-   return FileResponse(BASE_DIR / "frontend" / "register.html")
+# @app.get("/register", include_in_schema=False)
+# def register_page():
+#    return FileResponse(BASE_DIR / "frontend" / "register.html")
