@@ -1,17 +1,37 @@
 from fastapi import FastAPI
 from pathlib import Path # for joining path
 from fastapi.responses import FileResponse
+from contextlib import asynccontextmanager
 
 from src.users.routes import register_user_routes
 # error handler
 from src.common.handlers import register_exception_handlers
 from fastapi.staticfiles import StaticFiles
 
+from src.database.connection import engine
+
 # get parent dir of main.py
 BASE_DIR = Path(__file__).resolve().parent
 
+# runs on startup
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+   print("app starts...")
+
+   # connect to postgres
+   with engine.connect() as connection:
+      print("postgres connected successful") 
+
+   # after this -- shutdown code
+   yield
+
+   print('app shutdown...') 
+
+   # close db explicitly
+   engine.dispose()
+
 # fastapi main app
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 
 # serve static files
 app.mount(
@@ -25,6 +45,22 @@ register_exception_handlers(app=app)
 
 # register users routes
 register_user_routes(app=app)
+
+@app.get("/health/database")
+def database_health():
+   try:
+      # open db connection 
+      with engine.connect():
+         return dict(
+            status="ok",
+            database="postgres",
+         )
+   except Exception:
+      return dict(
+         status="not ok",
+         database="postgres",
+      )
+
 
 # frontend routes
 @app.get("/", include_in_schema=False)
