@@ -17,13 +17,9 @@ from src.common.schemas import ErrorResponse # global response error schema
 from src.common.constants import API_PREFIX
 from src.users.repository import UserRepository
 
-def register_user_routes(app: FastAPI, repository: UserRepository):
+from src.users.model import User
 
-   users = [
-      {"id": 1, "name": "Alice"},
-      {"id": 2, "name": "Bob"},
-      {"id": 3, "name": "Charlie"},
-   ]
+def register_user_routes(app: FastAPI, repository: UserRepository):
    
    @app.get(
       f"{API_PREFIX}/users",
@@ -35,7 +31,7 @@ def register_user_routes(app: FastAPI, repository: UserRepository):
    ):
 
       users = repository.get_all()
-      
+
       # exclude hashed_password
       return [
          user.model_dump(exclude={"hashed_password"})
@@ -55,15 +51,19 @@ def register_user_routes(app: FastAPI, repository: UserRepository):
       # url parameter
       user_id: int = Path(..., gt=0, description="The id of the user to get")
       ):
-      for user in users:
-         if user["id"] == user_id:
-            return user
 
-      # fastapi turns this into an HTTP response
-      raise AppException(
-         code=ErrorCode.USER_NOT_FOUND.value,
-         message=f"user with {user_id} does not exist",
-         status_code=status.HTTP_404_NOT_FOUND,
+      user = repository.get_by_id(user_id=user_id)
+
+      if not user:
+         # fastapi turns this into an HTTP response
+         raise AppException(
+            code=ErrorCode.USER_NOT_FOUND.value,
+            message=f"user with {user_id} does not exist",
+            status_code=status.HTTP_404_NOT_FOUND,
+         )
+
+      return user.model_dump(
+         exclude={"hashed_password"}
       )
 
    @app.post(
@@ -75,15 +75,19 @@ def register_user_routes(app: FastAPI, repository: UserRepository):
       user: UserCreateRequest = Body(...)
       ):
 
-      # create a new user
-      new_user = {
-         "id": len(users) + 1,
-         "name": user.name
-      }
+      # make a new user object using model
+      new_user = User(
+         username=user.username,
+         email=user.email,
+         hashed_password=user.hashed_password,
+      )
 
-      users.append(new_user)
+      # create a user in db
+      created_user = repository.create(new_user)
 
-      return new_user
+      return created_user.model_dump(
+         exclude={"hashed_password"},
+      )
 
    @app.put(
       f"{API_PREFIX}/users/{{user_id}}",
@@ -93,15 +97,48 @@ def register_user_routes(app: FastAPI, repository: UserRepository):
       data: UserUpdateRequest = Body(...), # body
       user_id: int = Path(..., gt=0)
    ):
-      for user in users:
-         if user["id"] == user_id:
-            user["name"] = data.name
-            return user
 
-      raise AppException(
-         code=ErrorCode.USER_NOT_FOUND.value,
-         message=f"user with {user_id} does not exist",
-         status_code=status.HTTP_404_NOT_FOUND,
+      # check: if at least one field is provided
+      if not data.has_at_least_one_field():
+         raise AppException(
+            code=ErrorCode.INVALID_INPUT,
+            message=f"at least provide one field",
+            status_code=status.HTTP_400_BAD_REQUEST,
+         )
+
+      # find the user
+      user = repository.get_by_id(user_id)
+
+      if not user:
+         raise AppException(
+            code=ErrorCode.USER_NOT_FOUND.value,
+            message=f"user with {user_id} does not exist",
+            status_code=status.HTTP_404_NOT_FOUND,
+         )
+
+      # update user 
+
+      # user.username = data.name
+      # user.email = data.name
+
+      # update only the provided fields
+      update_data = data.model_dump(
+         exclude_unset=True, # remove the empty values
+         exclude_none=True,
+      )
+
+      # set new values on user
+      for field, value in update_data.items():
+         setattr(
+            user, # obj
+            field, # name
+            value, # value
+         )
+
+      updated_user = repository.update(user)
+
+      return updated_user.model_dump(
+         exclude={"hashed_password"},
       )
 
    @app.delete(
@@ -111,14 +148,19 @@ def register_user_routes(app: FastAPI, repository: UserRepository):
       # ... means required
       user_id: int = Path(..., gt=0)
    ):
-      for index, user in enumerate(users):
-         if user["id"] == user_id:
-            deleted_user = users.pop(index)
+      # find user 
+      user = repository.get_by_id(user_id)
 
-            return deleted_user
+      if not user:
+         raise AppException(
+            code=ErrorCode.USER_NOT_FOUND.value,
+            message=f"user with {user_id} does not exist",
+            status_code=status.HTTP_404_NOT_FOUND,
+         )
 
-      raise AppException(
-         code=ErrorCode.USER_NOT_FOUND.value,
-         message=f"user with {user_id} does not exist",
-         status_code=status.HTTP_404_NOT_FOUND,
+      # delete from db
+      deleted_user = repository.delete(user)
+
+      return deleted_user.model_dump(
+         exclude={"hashed_password"},
       )

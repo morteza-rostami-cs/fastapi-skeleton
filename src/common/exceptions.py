@@ -11,3 +11,4 @@ class ErrorCode(str, Enum):
    """ Error codes for the application """
 
    USER_NOT_FOUND="USER_NOT_FOUND"
+   INVALID_INPUT="INVALID_INPUT"

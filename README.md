@@ -16,6 +16,10 @@ This is a fast-api skeleton application
 
 #freeze packages
   pip freeze > requirements.txt
+
+# email validator
+pip install 'pydantic[email]
+
 ```
 
 ## database setup (local postgres)
