@@ -14,6 +14,9 @@ from src.admin import register_admin
 # repositories
 from src.users.repository import UserRepository
 
+# redis connection
+from src.redis.connection import redis_client
+
 # get parent dir of main.py
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -26,10 +29,17 @@ async def lifespan(app: FastAPI):
    with engine.connect() as connection:
       print("postgres connected successful") 
 
+   # connect redis
+   await redis_client.ping()
+   print("redis connected successfully")
+
    # after this -- shutdown code
    yield
 
    print('app shutdown...') 
+
+   # close redis
+   await redis_client.aclose()
 
    # close db explicitly
    engine.dispose()
@@ -71,6 +81,18 @@ def database_health():
          database="postgres",
       )
 
+# redis health route
+@app.get("/health/redis")
+async def redis_health():
+   try:
+      await redis_client.ping()
+
+      return dict(status="ok", redis="connected")
+   except Exception:
+      return dict(
+         status="not ok",
+         redis="not connected",
+      )
 
 # frontend routes
 @app.get("/", include_in_schema=False)

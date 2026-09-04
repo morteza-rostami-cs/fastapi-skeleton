@@ -18,7 +18,7 @@ This is a fast-api skeleton application
   pip freeze > requirements.txt
 
 # email validator
-pip install 'pydantic[email]
+pip install pydantic[email]
 
 ```
 
@@ -81,5 +81,19 @@ alembic history
 pip install sqladmin
 
 http://127.0.0.1:8000/admin
+
+```
+
+## Setup redis (local)
+
+```bash
+
+# check status
+sudo systemctl status redis-server
+
+# install redis client
+pip install redis
+
+
 
 ```
