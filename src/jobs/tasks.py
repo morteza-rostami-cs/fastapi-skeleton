@@ -2,6 +2,7 @@
 # keep the function who perform jobs here
 
 import asyncio
+from arq import Retry
 
 # worker calls this function to -- execute the job
 async def send_welcome_email(
@@ -17,3 +18,11 @@ async def send_welcome_email(
    await asyncio.sleep(5)
 
    print(f"task: welcome email to: {user_id}")
+
+# a job that fails
+async def failing_job(ctx: dict):
+   print("job: failing job")
+
+   await asyncio.sleep(1)
+
+   raise Retry() # retry the job if max_tries is set inside WorkerSettings

@@ -1,7 +1,10 @@
 from arq import ArqRedis
 from fastapi import FastAPI, APIRouter, Depends
 
-from src.jobs.constants import WELCOME_EMAIL_JOB
+from src.jobs.constants import (
+   WELCOME_EMAIL_JOB,
+   FAILING_JOB,
+)
 from src.common.constants import API_PREFIX
 
 # dependency
@@ -29,4 +32,20 @@ def register_job_routes(
          job_id= job.job_id,
       )
 
+   @router.post("/test-failure")
+   async def test_failure(
+      arq_pool: ArqRedis = Depends(get_arq_pool)
+   ):
+      # queue a job
+      job = await arq_pool.enqueue_job(
+         FAILING_JOB,
+      )
+
+      return dict(
+         message="failing job queued",
+         job_id= job.job_id,
+      )
+
+
+   # register routes on app
    app.include_router(router, prefix=f"{API_PREFIX}/jobs")
