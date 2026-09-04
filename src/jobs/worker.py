@@ -1,13 +1,32 @@
-# import the job
-from src.jobs.tasks import process_example_job
 
-def main():
-   print("worker: started")
+# import the jobs and configure worker
 
-   process_example_job()
+from arq import create_pool
+from arq.connections import RedisSettings
 
-   print("worker: shutdown")
+from src.common.settings import settings
+from src.jobs.constants import WELCOME_EMAIL_JOB # job name
+from src.jobs.tasks import send_welcome_email # handle job function
 
-# we run this module directly (as a process on our os)
-if __name__ == "__main__":
-   main()
+# on worker startup
+async def startup(ctx):
+   print("worker started")
+
+# on worker shutdown
+async def shutdown(ctx):
+   print("worker shutdown")
+
+
+class WorkerSettings:
+   # register job handlers
+   functions = [
+      send_welcome_email,
+   ]
+
+   # add redis
+   redis_settings = RedisSettings.from_dsn(
+      str(settings.redis_url), #redis url
+   )
+
+   on_startup = startup
+   on_shutdown = shutdown

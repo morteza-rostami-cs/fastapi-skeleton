@@ -94,6 +94,10 @@ sudo systemctl status redis-server
 # install redis client
 pip install redis
 
+# background job lib
+pip install arq
 
+# run worker
+arq src.jobs.worker.WorkerSettings
 
 ```

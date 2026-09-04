@@ -3,7 +3,6 @@ from pathlib import Path # for joining path
 from fastapi.responses import FileResponse
 from contextlib import asynccontextmanager
 
-from src.users.routes import register_user_routes
 # error handler
 from src.common.handlers import register_exception_handlers
 from fastapi.staticfiles import StaticFiles
@@ -14,13 +13,26 @@ from src.admin import register_admin
 # repositories
 from src.users.repository import UserRepository
 
+# routes
+from src.users.routes import register_user_routes
+from src.jobs.routes import register_job_routes
+
 # redis connection
 from src.redis.connection import redis_client
+
+# background job stuff
+from arq import create_pool
+from arq.connections import RedisSettings
+from src.common.settings import settings 
+
+# arq redis pool
+#arq_pool = None
 
 # get parent dir of main.py
 BASE_DIR = Path(__file__).resolve().parent
 
 # runs on startup
+# runs after router registration
 @asynccontextmanager
 async def lifespan(app: FastAPI):
    print("app starts...")
@@ -33,10 +45,24 @@ async def lifespan(app: FastAPI):
    await redis_client.ping()
    print("redis connected successfully")
 
+   # connect arq and redis
+   #global arq_pool
+
+   app.state.arq_pool = await create_pool(
+      # give arq a redis
+      RedisSettings.from_dsn(
+         str(settings.redis_url)
+      )
+   )
+   print("arq connected success")
+
    # after this -- shutdown code
    yield
 
    print('app shutdown...') 
+
+   # close arq pool
+   await app.state.arq_pool.close()
 
    # close redis
    await redis_client.aclose()
@@ -62,6 +88,9 @@ register_exception_handlers(app=app)
 
 # create repository
 user_repo = UserRepository()
+
+# register jobs routes
+register_job_routes(app=app)
 
 # register users routes
 register_user_routes(app=app, repository=user_repo)
