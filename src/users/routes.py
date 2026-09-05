@@ -15,8 +15,11 @@ from src.common.exceptions import AppException, ErrorCode
 from src.common.schemas import ErrorResponse # global response error schema
 
 from src.common.constants import API_PREFIX
+
+# repository
 from src.users.repository import UserRepository
 
+# model
 from src.users.model import User
 
 def register_user_routes(app: FastAPI, repository: UserRepository):

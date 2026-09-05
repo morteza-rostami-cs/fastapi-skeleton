@@ -8,7 +8,7 @@ class UserCreateRequest(BaseModel):
       min_length=2,
       max_length=50
    )
-   email: str
+   email: EmailStr
    hashed_password: str
 
 class UserUpdateRequest(BaseModel):
@@ -37,5 +37,5 @@ class UserUpdateRequest(BaseModel):
 class UserResponse(BaseModel):
    id: int
    username: str
-   email: str
+   email: EmailStr
    created_at: datetime

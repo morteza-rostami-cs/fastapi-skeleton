@@ -101,3 +101,12 @@ pip install arq
 arq src.jobs.worker.WorkerSettings
 
 ```
+
+## auth
+
+```bash
+
+# for hashing password
+pip install bcrypt
+
+```

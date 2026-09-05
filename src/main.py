@@ -16,6 +16,7 @@ from src.users.repository import UserRepository
 # routes
 from src.users.routes import register_user_routes
 from src.jobs.routes import register_job_routes
+from src.auth.routes import register_auth_routes
 
 # redis connection
 from src.redis.connection import redis_client
@@ -94,6 +95,8 @@ register_job_routes(app=app)
 
 # register users routes
 register_user_routes(app=app, repository=user_repo)
+
+register_auth_routes(app, user_repo=user_repo)
 
 @app.get("/health/database")
 def database_health():

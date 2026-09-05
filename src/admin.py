@@ -13,6 +13,7 @@ class UserAdmin(ModelView, model=User):
       User.id,
       User.username,
       User.email,
+      User.email_verified,
       User.created_at,
       User.updated_at,
    ]
@@ -20,12 +21,14 @@ class UserAdmin(ModelView, model=User):
    column_searchable_list = [
       User.username,
       User.email,
+      User.email_verified,
    ]
 
    column_sortable_list = [
       User.id,
       User.username,
       User.email,
+      User.email_verified,
       User.created_at,
       User.updated_at,
    ]

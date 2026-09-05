@@ -27,6 +27,12 @@ class User(
       nullable=False
    )
 
+   # email verification flag
+   email_verified: bool = Field(
+      default=False,
+      nullable=False, # can not be null
+   )
+
    created_at: datetime = Field(
       default_factory=lambda: datetime.now(timezone.utc),
       nullable=False,

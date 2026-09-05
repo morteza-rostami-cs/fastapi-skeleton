@@ -2,6 +2,7 @@ from sqlmodel import Session, select
 
 from src.database.connection import engine # database access
 from src.users.model import User
+from datetime import datetime, timezone
 
 class UserRepository:
 
@@ -43,5 +44,28 @@ class UserRepository:
       with Session(engine) as session:
          session.delete(user)
          session.commit()
+
+         return user
+
+   # for updating email_verified
+   def verify_email(self, user_id: int) -> User | None:
+
+      # open a db session
+      with Session(engine) as session:
+         # find user
+         user = session.get(User, user_id)
+
+         # check if user exists
+         if user is None:
+            return None
+
+         # update field
+         user.email_verified = True
+         user.updated_at = datetime.now(timezone.utc)
+
+         # save
+         session.add(user)
+         session.commit()
+         session.refresh(user)
 
          return user
